@@ -42,7 +42,7 @@ const Messages = ({ likedUsers }) => {
           <div style={{ textAlign: 'center', fontSize: 12, color: '#444', marginBottom: 8 }}>You matched with {activeChat.name.split(' ')[0]}! Say hi 👋</div>
           {messages.map((msg, i) => (
             <div key={i} style={{ display: 'flex', justifyContent: msg.from === 'me' ? 'flex-end' : 'flex-start', gap: 8, alignItems: 'flex-end' }}>
-              {msg.from === 'them' && <img src={activeChat.avatar} style={{ width: 28, height: 28, borderRadius: '50%' }} />}
+              {msg.from === 'them' && <img src={activeChat.avatar} alt="" style={{ width: 28, height: 28, borderRadius: '50%' }} />}
               <div style={{ maxWidth: '72%', background: msg.from === 'me' ? 'linear-gradient(135deg, #ff4d6d, #ff8c32)' : '#1a1a2e', borderRadius: msg.from === 'me' ? '18px 18px 4px 18px' : '18px 18px 18px 4px', padding: '10px 14px', fontSize: 14 }}>
                 {msg.text}
               </div>
