@@ -64,9 +64,9 @@ function App() {
       <Header tab={tab} setTab={setTab} onLogout={handleLogout} />
       <div style={{ height: 'calc(100vh - 72px)', overflowY: 'auto' }}>
         {tab === 'feed' && <Feed posts={posts} setPosts={setPosts} comments={comments} setComments={setComments} setOpenPost={setOpenPost} />}
-        {tab === 'search' && <Search />}
+        {tab === 'search' && <Search session={session} />}
         {tab === 'discover' && <Discover likedUsers={likedUsers} setLikedUsers={setLikedUsers} setMatchedUser={setMatchedUser} />}
-        {tab === 'messages' && <Messages likedUsers={likedUsers} />}
+        {tab === 'messages' && <Messages likedUsers={likedUsers} session={session} />}
         {tab === 'profile' && <Profile likedUsers={likedUsers} posts={posts} session={session} profile={profile} onLogout={handleLogout} />}
       </div>
       {openPost && <CommentsOverlay post={posts.find(p => p.id === openPost.id) || openPost} comments={comments} setComments={setComments} setPosts={setPosts} onClose={() => setOpenPost(null)} />}
