@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './supabase';
 import Auth from './components/Auth';
+import ProfileSetup from './components/ProfileSetup';
 import Header from './components/Header';
 import Feed from './components/Feed';
+import Search from './components/Search';
 import Discover from './components/Discover';
 import Messages from './components/Messages';
 import Profile from './components/Profile';
@@ -12,6 +14,7 @@ import { INITIAL_POSTS, INITIAL_COMMENTS } from './data/mockData';
 
 function App() {
   const [session, setSession] = useState(null);
+  const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('feed');
   const [posts, setPosts] = useState(INITIAL_POSTS);
@@ -23,17 +26,27 @@ function App() {
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
-      setLoading(false);
+      if (session) fetchProfile(session.user.id);
+      else setLoading(false);
     });
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (session) fetchProfile(session.user.id);
+      else { setProfile(null); setLoading(false); }
     });
     return () => subscription.unsubscribe();
   }, []);
 
+  const fetchProfile = async (userId) => {
+    const { data } = await supabase.from('profiles').select('*').eq('id', userId).single();
+    setProfile(data);
+    setLoading(false);
+  };
+
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setSession(null);
+    setProfile(null);
   };
 
   if (loading) return (
@@ -42,16 +55,19 @@ function App() {
     </div>
   );
 
-  if (!session) return <Auth onLogin={() => supabase.auth.getSession().then(({ data: { session } }) => setSession(session))} />;
+  if (!session) return <Auth onLogin={() => {}} />;
+
+  if (!profile) return <ProfileSetup session={session} onComplete={() => fetchProfile(session.user.id)} />;
 
   return (
     <div style={{ background: '#0a0a0f', minHeight: '100vh', color: '#fff', maxWidth: 430, margin: '0 auto', position: 'relative', overflow: 'hidden', fontFamily: "'DM Sans', sans-serif" }}>
       <Header tab={tab} setTab={setTab} onLogout={handleLogout} />
-      <div style={{ height: 'calc(100vh - 64px)', overflowY: 'auto' }}>
+      <div style={{ height: 'calc(100vh - 72px)', overflowY: 'auto' }}>
         {tab === 'feed' && <Feed posts={posts} setPosts={setPosts} comments={comments} setComments={setComments} setOpenPost={setOpenPost} />}
+        {tab === 'search' && <Search />}
         {tab === 'discover' && <Discover likedUsers={likedUsers} setLikedUsers={setLikedUsers} setMatchedUser={setMatchedUser} />}
         {tab === 'messages' && <Messages likedUsers={likedUsers} />}
-        {tab === 'profile' && <Profile likedUsers={likedUsers} posts={posts} session={session} onLogout={handleLogout} />}
+        {tab === 'profile' && <Profile likedUsers={likedUsers} posts={posts} session={session} profile={profile} onLogout={handleLogout} />}
       </div>
       {openPost && <CommentsOverlay post={posts.find(p => p.id === openPost.id) || openPost} comments={comments} setComments={setComments} setPosts={setPosts} onClose={() => setOpenPost(null)} />}
       {matchedUser && <MatchOverlay matchedUser={matchedUser} onClose={() => setMatchedUser(null)} onMessage={() => { setMatchedUser(null); setTab('messages'); }} />}
